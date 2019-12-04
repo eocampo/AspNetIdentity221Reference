@@ -47,8 +47,8 @@ namespace AspNetIdentity221Reference
 
             // Configure validation logic for passwords
             manager.PasswordValidator = new PasswordValidator {
-                RequiredLength = 6,
-                RequireNonLetterOrDigit = true,
+                RequiredLength = 8,
+                RequireNonLetterOrDigit = false, // true,
                 RequireDigit = true,
                 RequireLowercase = true,
                 RequireUppercase = true,
