@@ -12,13 +12,44 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using AspNetIdentity221Reference.Models;
 
+using SendGrid;
+using System.Configuration;
+
 namespace AspNetIdentity221Reference
 {
     public class EmailService : IIdentityMessageService
     {
         public Task SendAsync(IdentityMessage message) {
             // Plug in your email service here to send an email.
-            return Task.FromResult(0);
+            //return Task.FromResult(0);
+            //var useSendGrid = Convert.ToBoolean(ConfigurationManager.AppSettings["UseSendGrid"]);
+            //if (useSendGrid)
+            return ConfigSendGridAsync(message);
+            //else
+            //    return ConfigSendSMTPAsync(message);
+        }
+
+        private Task ConfigSendGridAsync(IdentityMessage message) {
+            var myMessage = new SendGridMessage();
+            myMessage.AddTo(message.Destination);
+            myMessage.From = new System.Net.Mail.MailAddress(ConfigurationManager.AppSettings["AccountMailFrom"], ConfigurationManager.AppSettings["AccountMailFromDisplayName"]);
+            myMessage.Subject = message.Subject;
+            myMessage.Text = message.Body;
+            myMessage.Html = message.Body;
+
+            //var credentials = new System.Net.NetworkCredential(
+            //    ConfigurationManager.AppSettings["SendGridUser"],
+            //    ConfigurationManager.AppSettings["SendGridAPIKey"]
+            //    );
+
+            //var transportWeb = new Web(credentials); // Cambiar por APIKEY
+            var transportWeb = new SendGrid.Web(ConfigurationManager.AppSettings["SendGridAPIKey"]);
+
+            if (transportWeb != null) {
+                return transportWeb.DeliverAsync(myMessage);
+            } else {
+                return Task.FromResult(0);
+            }
         }
     }
 
