@@ -13,5 +13,11 @@ namespace AspNetIdentity221Reference.Controllers
         public ActionResult Index() {
             return View();
         }
+
+        [Authorize]
+        public ActionResult Contact() {
+            ViewBag.Message = "Your contact page.";
+            return View();
+        }
     }
 }
