@@ -83,6 +83,29 @@ namespace AspNetIdentity221Reference.Controllers
             return View(model);
         }
 
+        //
+        // POST: /Manage/EnableTwoFactorAuthentication
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<ActionResult> EnableTwoFactorAuthentication() {
+            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), true);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (user != null) {
+                await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+            }
+            return RedirectToAction("Index", "Manage");
+        }
+        //
+        // POST: /Manage/DisableTwoFactorAuthentication
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<ActionResult> DisableTwoFactorAuthentication() {
+            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), false);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (user != null) {
+                await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+            }
+            return RedirectToAction("Index", "Manage");
+        }
+
         protected override void Dispose(bool disposing) {
             if (disposing && _userManager != null) {
                 _userManager.Dispose();
