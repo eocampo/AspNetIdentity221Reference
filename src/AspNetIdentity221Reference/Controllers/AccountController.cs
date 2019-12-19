@@ -295,9 +295,7 @@ namespace AspNetIdentity221Reference.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLogin(string provider, string returnUrl) {
-            //// https://stackoverflow.com/questions/20737578/asp-net-sessionid-owin-cookies-do-not-send-to-browser
-            //Session["Workaround"] = 0;
+        public ActionResult ExternalLogin(string provider, string returnUrl) {            
             // Request a redirect to the external login provider
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }

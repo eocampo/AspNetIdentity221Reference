@@ -77,11 +77,7 @@ namespace AspNetIdentity221Reference
 
             var googleAuthenticationOptions = new GoogleOAuth2AuthenticationOptions() {
                 ClientId = ConfigurationManager.AppSettings["GoogleAuthenticationId"],
-                ClientSecret = ConfigurationManager.AppSettings["GoogleAuthenticationSecret"]
-                // https://github.com/aspnet/AspNetKatana/issues/251#issuecomment-449587635
-                // https://github.com/aspnet/AspNetCore/issues/6069
-                , UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo",
-                BackchannelHttpHandler = new GoogleUserInfoRemapper(new System.Net.Http.WebRequestHandler())                
+                ClientSecret = ConfigurationManager.AppSettings["GoogleAuthenticationSecret"]                
             };
             //googleAuthenticationOptions.Scope.Add("profile");
             googleAuthenticationOptions.Scope.Add("email");
@@ -98,57 +94,6 @@ namespace AspNetIdentity221Reference
             };
 
             app.UseGoogleAuthentication(googleAuthenticationOptions);
-        }
-
-        // https://github.com/aspnet/AspNetKatana/issues/251#issuecomment-449587635
-        internal class GoogleUserInfoRemapper : System.Net.Http.DelegatingHandler
-        {
-            public GoogleUserInfoRemapper(System.Net.Http.HttpMessageHandler innerHandler) : base(innerHandler) { }
-
-            protected override async Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) {
-                var response = await base.SendAsync(request, cancellationToken);
-
-                if (!request.RequestUri.AbsoluteUri.Equals("https://www.googleapis.com/oauth2/v2/userinfo")) {
-                    return response;
-                }
-
-                response.EnsureSuccessStatusCode();
-                var text = await response.Content.ReadAsStringAsync();
-                Newtonsoft.Json.Linq.JObject user = Newtonsoft.Json.Linq.JObject.Parse(text);
-                Newtonsoft.Json.Linq.JObject legacyFormat = new Newtonsoft.Json.Linq.JObject();
-
-                Newtonsoft.Json.Linq.JToken token;
-                if (user.TryGetValue("id", out token)) {
-                    legacyFormat["id"] = token;
-                }
-                if (user.TryGetValue("name", out token)) {
-                    legacyFormat["displayName"] = token;
-                }
-                Newtonsoft.Json.Linq.JToken given, family;
-                if (user.TryGetValue("given_name", out given) && user.TryGetValue("family_name", out family)) {
-                    var name = new Newtonsoft.Json.Linq.JObject();
-                    name["givenName"] = given;
-                    name["familyName"] = family;
-                    legacyFormat["name"] = name;
-                }
-                if (user.TryGetValue("link", out token)) {
-                    legacyFormat["url"] = token;
-                }
-                if (user.TryGetValue("email", out token)) {
-                    var email = new Newtonsoft.Json.Linq.JObject();
-                    email["value"] = token;
-                    legacyFormat["emails"] = new Newtonsoft.Json.Linq.JArray(email);
-                }
-                if (user.TryGetValue("picture", out token)) {
-                    var image = new Newtonsoft.Json.Linq.JObject();
-                    image["url"] = token;
-                    legacyFormat["image"] = image;
-                }
-
-                text = legacyFormat.ToString();
-                response.Content = new System.Net.Http.StringContent(text);
-                return response;
-            }
-        }
+        }       
     }
 }
