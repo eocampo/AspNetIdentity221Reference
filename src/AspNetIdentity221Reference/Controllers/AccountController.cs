@@ -311,6 +311,8 @@ namespace AspNetIdentity221Reference.Controllers
                 return RedirectToAction("Login");
             }
 
+            //var result = await AuthenticationManager.AuthenticateAsync(DefaultAuthenticationTypes.ExternalCookie);
+
             // Sign in the user with this external login provider if the user already has a login
             var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
             switch (result) {
